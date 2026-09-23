@@ -1,0 +1,3643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dipole Antenna Performance Simulator</title>
+
+<style>
+
+/* =========================================================
+   RESET
+========================================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,
+body{
+    width:100%;
+    min-height:100%;
+}
+
+body{
+    font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    background:#050505;
+    color:#ffffff;
+}
+
+
+/* =========================================================
+   COLOR VARIABLES
+========================================================= */
+
+:root{
+
+    --black:#050505;
+    --black2:#0b0b0b;
+    --black3:#111111;
+
+    --red:#e50914;
+    --red-dark:#9f0008;
+    --red-light:#ff2a35;
+
+    --white:#ffffff;
+    --white-soft:#e8e8e8;
+    --gray:#999999;
+    --gray-dark:#222222;
+    --border:#2c2c2c;
+
+}
+
+
+/* =========================================================
+   WELCOME PAGE
+========================================================= */
+
+#welcomePage{
+
+    min-height:100vh;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    padding:30px;
+
+    position:relative;
+
+    overflow:hidden;
+
+    background:
+
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(229,9,20,.14),
+            transparent 30%
+        ),
+
+        radial-gradient(
+            circle at 80% 80%,
+            rgba(255,255,255,.04),
+            transparent 25%
+        ),
+
+        #050505;
+}
+
+
+/* RED GRID EFFECT */
+
+#welcomePage::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background:
+
+        linear-gradient(
+            rgba(255,255,255,.025) 1px,
+            transparent 1px
+        ),
+
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.025) 1px,
+            transparent 1px
+        );
+
+    background-size:40px 40px;
+
+    pointer-events:none;
+}
+
+
+/* WELCOME CARD */
+
+.welcome-card{
+
+    width:min(900px,95vw);
+
+    position:relative;
+
+    z-index:2;
+
+    padding:45px;
+
+    text-align:center;
+
+    background:
+
+        linear-gradient(
+            145deg,
+            #111111,
+            #080808
+        );
+
+    border:
+
+        1px solid #333333;
+
+    border-top:
+
+        3px solid var(--red);
+
+    border-radius:18px;
+
+    box-shadow:
+
+        0 0 50px
+        rgba(229,9,20,.12),
+
+        0 25px 80px
+        rgba(0,0,0,.8);
+}
+
+
+/* LOGO */
+
+.rf-logo{
+
+    width:100px;
+    height:100px;
+
+    margin:0 auto 22px;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    border-radius:50%;
+
+    background:#080808;
+
+    border:
+
+        2px solid var(--red);
+
+    box-shadow:
+
+        0 0 25px
+        rgba(229,9,20,.35),
+
+        inset 0 0 25px
+        rgba(229,9,20,.08);
+
+    font-size:46px;
+}
+
+
+/* WELCOME TITLE */
+
+.welcome-card h1{
+
+    font-size:
+        clamp(
+            30px,
+            4vw,
+            48px
+        );
+
+    font-weight:800;
+
+    letter-spacing:.5px;
+
+    color:#ffffff;
+
+    margin-bottom:8px;
+}
+
+.welcome-card h2{
+
+    color:var(--red-light);
+
+    font-size:19px;
+
+    font-weight:600;
+
+    margin-bottom:22px;
+
+    letter-spacing:.3px;
+}
+
+.welcome-description{
+
+    max-width:700px;
+
+    margin:auto;
+
+    color:#999999;
+
+    line-height:1.7;
+
+    font-size:14px;
+}
+
+
+/* STUDENT INFORMATION */
+
+.student-info{
+
+    max-width:680px;
+
+    margin:28px auto;
+
+    padding:17px 24px;
+
+    text-align:left;
+
+    background:#090909;
+
+    border:
+
+        1px solid #292929;
+
+    border-left:
+
+        3px solid var(--red);
+
+    border-radius:10px;
+}
+
+.info-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:20px;
+
+    padding:9px 0;
+
+    border-bottom:
+
+        1px solid #1d1d1d;
+}
+
+.info-row:last-child{
+
+    border-bottom:none;
+}
+
+.info-label{
+
+    color:#777777;
+
+    font-size:12px;
+}
+
+.info-value{
+
+    color:#ffffff;
+
+    font-weight:600;
+
+    text-align:right;
+
+    font-size:13px;
+}
+
+
+/* START BUTTON */
+
+.start-btn{
+
+    padding:
+
+        14px 38px;
+
+    border:none;
+
+    border-radius:7px;
+
+    background:
+
+        linear-gradient(
+            90deg,
+            #a9000a,
+            #e50914
+        );
+
+    color:white;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    letter-spacing:.3px;
+
+    box-shadow:
+
+        0 0 20px
+        rgba(229,9,20,.2);
+
+    transition:.25s;
+}
+
+.start-btn:hover{
+
+    transform:
+        translateY(-2px);
+
+    background:
+
+        linear-gradient(
+            90deg,
+            #c0000b,
+            #ff1c28
+        );
+
+    box-shadow:
+
+        0 0 30px
+        rgba(229,9,20,.4);
+}
+
+
+/* =========================================================
+   SIMULATION PAGE
+========================================================= */
+
+#simulationPage{
+
+    display:none;
+
+    min-height:100vh;
+
+    background:#050505;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header{
+
+    height:70px;
+
+    background:#090909;
+
+    border-bottom:
+
+        1px solid #292929;
+
+    position:relative;
+}
+
+.header::after{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+    right:0;
+    bottom:0;
+
+    height:2px;
+
+    background:
+
+        linear-gradient(
+            90deg,
+            transparent,
+            var(--red),
+            transparent
+        );
+}
+
+.header-content{
+
+    width:96%;
+
+    max-width:1800px;
+
+    height:100%;
+
+    margin:auto;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:20px;
+}
+
+
+/* HEADER LOGO */
+
+.logo-title{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+}
+
+.small-logo{
+
+    width:42px;
+    height:42px;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    border-radius:8px;
+
+    background:#0d0d0d;
+
+    border:
+
+        1px solid var(--red);
+
+    box-shadow:
+
+        0 0 15px
+        rgba(229,9,20,.2);
+
+    font-size:20px;
+}
+
+.logo-title h1{
+
+    font-size:17px;
+
+    color:#ffffff;
+}
+
+.logo-title p{
+
+    color:#666666;
+
+    font-size:10px;
+
+    margin-top:3px;
+}
+
+.student-name{
+
+    position:absolute;
+
+    left:50%;
+
+    top:50%;
+
+    transform:translate(-50%,-50%);
+
+    color:#ffffff;
+
+    font-weight:700;
+
+    font-size:14px;
+
+    letter-spacing:.3px;
+
+    white-space:nowrap;
+}
+
+.student-name::before{
+
+    content:"●";
+
+    color:#e50914;
+
+    margin-right:7px;
+}
+}
+
+.student-name::before{
+
+    content:"●";
+
+    color:var(--red);
+
+    margin-right:7px;
+}
+
+.back-btn{
+
+    padding:
+
+        8px 13px;
+
+    background:#0d0d0d;
+
+    color:#aaaaaa;
+
+    border:
+
+        1px solid #303030;
+
+    border-radius:6px;
+
+    font-size:11px;
+
+    transition:.2s;
+}
+
+.back-btn:hover{
+
+    color:#ffffff;
+
+    border-color:var(--red);
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+========================================================= */
+
+.main-container{
+
+    width:96%;
+
+    max-width:1800px;
+
+    margin:auto;
+}
+
+.page-title{
+
+    padding:
+        14px 0
+        11px;
+}
+
+.page-title h2{
+
+    font-size:21px;
+
+    color:#ffffff;
+}
+
+.page-title p{
+
+    color:#666666;
+
+    font-size:11px;
+
+    margin-top:4px;
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+.dashboard{
+
+    display:grid;
+
+    grid-template-columns:
+        300px
+        minmax(0,1fr);
+
+    gap:14px;
+
+    min-height:570px;
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.card{
+
+    background:
+
+        linear-gradient(
+            145deg,
+            #101010,
+            #090909
+        );
+
+    border:
+
+        1px solid #292929;
+
+    border-radius:11px;
+
+    padding:15px;
+
+    box-shadow:
+
+        0 10px 30px
+        rgba(0,0,0,.3);
+}
+
+.card-title{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:7px;
+
+    color:#ffffff;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    margin-bottom:12px;
+}
+
+.card-title::first-letter{
+
+    color:var(--red);
+}
+
+
+/* =========================================================
+   CONTROLS
+========================================================= */
+
+.control-card{
+
+    height:100%;
+
+    border-top:
+
+        2px solid var(--red);
+}
+
+.controls{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:11px;
+}
+
+.control-group label{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-bottom:5px;
+
+    color:#777777;
+
+    font-size:11px;
+}
+
+.control-value{
+
+    color:#ff303a;
+
+    font-weight:700;
+}
+
+select,
+input[type="number"]{
+
+    width:100%;
+
+    padding:
+
+        9px 10px;
+
+    border-radius:6px;
+
+    border:
+
+        1px solid #303030;
+
+    background:#070707;
+
+    color:#ffffff;
+
+    outline:none;
+
+    font-size:12px;
+}
+
+select:focus,
+input[type="number"]:focus{
+
+    border-color:var(--red);
+
+    box-shadow:
+
+        0 0 0 2px
+        rgba(229,9,20,.1);
+}
+
+
+/* SLIDER */
+
+input[type="range"]{
+
+    width:100%;
+
+    accent-color:var(--red);
+
+    cursor:pointer;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.button-row{
+
+    display:grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap:7px;
+}
+
+.primary-btn,
+.secondary-btn{
+
+    min-height:34px;
+
+    border-radius:6px;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    transition:.2s;
+}
+
+.primary-btn{
+
+    border:
+
+        1px solid var(--red);
+
+    background:
+
+        linear-gradient(
+            90deg,
+            #9e0008,
+            #e50914
+        );
+
+    color:#ffffff;
+}
+
+.primary-btn:hover{
+
+    background:
+
+        linear-gradient(
+            90deg,
+            #c4000c,
+            #ff1d29
+        );
+
+    box-shadow:
+
+        0 0 18px
+        rgba(229,9,20,.3);
+}
+
+.secondary-btn{
+
+    border:
+
+        1px solid #303030;
+
+    background:#0e0e0e;
+
+    color:#aaaaaa;
+}
+
+.secondary-btn:hover{
+
+    color:#ffffff;
+
+    border-color:#777777;
+}
+
+
+/* =========================================================
+   SIGNAL DISPLAY
+========================================================= */
+
+.readout{
+
+    margin-top:2px;
+
+    padding:13px;
+
+    text-align:center;
+
+    border:
+
+        1px solid #302020;
+
+    border-top:
+
+        2px solid var(--red);
+
+    border-radius:8px;
+
+    background:
+
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(229,9,20,.10),
+            transparent 65%
+        ),
+
+        #070707;
+}
+
+.readout-label{
+
+    color:#777777;
+
+    font-size:9px;
+
+    letter-spacing:1px;
+}
+
+.signal-value{
+
+    margin:
+        3px 0;
+
+    color:#ff2632;
+
+    font-size:35px;
+
+    font-weight:800;
+
+    line-height:1.1;
+
+    text-shadow:
+
+        0 0 18px
+        rgba(229,9,20,.3);
+}
+
+.signal-unit{
+
+    color:#777777;
+
+    font-size:10px;
+}
+
+.status{
+
+    display:inline-block;
+
+    margin-top:7px;
+
+    padding:
+        4px 10px;
+
+    border-radius:20px;
+
+    background:#190b0c;
+
+    border:
+
+        1px solid #57171b;
+
+    color:#ff6b72;
+
+    font-size:9px;
+}
+
+
+/* =========================================================
+   RIGHT AREA
+========================================================= */
+
+.right-area{
+
+    min-width:0;
+
+    display:grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap:14px;
+
+    min-height:570px;
+}
+
+.visual-card,
+.pattern-card{
+
+    min-width:0;
+
+    min-height:0;
+}
+
+
+/* =========================================================
+   ANTENNA PANEL
+========================================================= */
+
+.antenna-panel{
+
+    position:relative;
+
+    height:
+        calc(100% - 30px);
+
+    min-height:510px;
+
+    overflow:hidden;
+
+    border-radius:8px;
+
+    border:
+
+        1px solid #292929;
+
+    background:
+
+        linear-gradient(
+            rgba(255,255,255,.025) 1px,
+            transparent 1px
+        ),
+
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.025) 1px,
+            transparent 1px
+        ),
+
+        #050505;
+
+    background-size:
+        28px 28px;
+}
+
+.angle-display{
+
+    position:absolute;
+
+    top:12px;
+    right:12px;
+
+    z-index:10;
+
+    padding:
+        7px 12px;
+
+    border-radius:6px;
+
+    background:#090909;
+
+    border:
+
+        1px solid #343434;
+
+    color:#777777;
+
+    font-size:10px;
+}
+
+.angle-display strong{
+
+    color:#ff2632;
+
+    font-size:18px;
+
+    margin-left:3px;
+}
+
+
+/* =========================================================
+   ANTENNA STAGE
+========================================================= */
+
+.antenna-stage{
+
+    position:absolute;
+
+    width:430px;
+    height:430px;
+
+    left:50%;
+    top:50%;
+
+    transform:
+        translate(-50%,-50%);
+}
+
+
+/* WAVE CIRCLES */
+
+.wave-circle{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    transform:
+        translate(-50%,-50%);
+
+    border-radius:50%;
+
+    border:
+        1px dashed #392022;
+}
+
+.wave1{
+
+    width:140px;
+    height:140px;
+}
+
+.wave2{
+
+    width:270px;
+    height:270px;
+}
+
+.wave3{
+
+    width:400px;
+    height:400px;
+}
+
+
+/* =========================================================
+   ANTENNA
+========================================================= */
+
+.antenna-rotator{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    width:360px;
+    height:360px;
+
+    transform:
+        translate(-50%,-50%);
+}
+
+.antenna{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    width:240px;
+    height:8px;
+
+    transform:
+        translate(-50%,-50%);
+}
+
+.dipole-half{
+
+    position:absolute;
+
+    top:0;
+
+    width:113px;
+    height:8px;
+
+    background:
+
+        linear-gradient(
+            90deg,
+            #ffffff,
+            #bdbdbd
+        );
+
+    border-radius:5px;
+
+    box-shadow:
+
+        0 0 8px
+        rgba(255,255,255,.15);
+}
+
+.left-half{
+
+    right:50%;
+}
+
+.right-half{
+
+    left:50%;
+}
+
+.feed-point{
+
+    position:absolute;
+
+    left:50%;
+    top:-5px;
+
+    width:10px;
+    height:18px;
+
+    transform:
+        translateX(-50%);
+
+    background:var(--red);
+
+    border-radius:3px;
+
+    box-shadow:
+
+        0 0 12px
+        rgba(229,9,20,.6);
+}
+
+.center-dot{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    width:10px;
+    height:10px;
+
+    transform:
+        translate(-50%,-50%);
+
+    background:var(--red);
+
+    border-radius:50%;
+
+    box-shadow:
+
+        0 0 15px
+        rgba(229,9,20,.65);
+}
+
+
+/* DIRECTION */
+
+.direction-line{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    width:180px;
+    height:2px;
+
+    background:var(--red);
+
+    transform-origin:left center;
+
+    box-shadow:
+
+        0 0 8px
+        rgba(229,9,20,.5);
+}
+
+.direction-arrow{
+
+    position:absolute;
+
+    right:-4px;
+    top:-5px;
+
+    width:0;
+    height:0;
+
+    border-top:
+        6px solid transparent;
+
+    border-bottom:
+        6px solid transparent;
+
+    border-left:
+        10px solid var(--red);
+}
+
+.tx-label{
+
+    position:absolute;
+
+    left:50%;
+    bottom:3px;
+
+    transform:
+        translateX(-50%);
+
+    color:#666666;
+
+    font-size:10px;
+}
+
+
+/* =========================================================
+   RADIATION PATTERN
+========================================================= */
+
+.pattern-card{
+
+    display:flex;
+
+    flex-direction:column;
+}
+
+canvas{
+
+    width:100%;
+
+    flex:1;
+
+    min-height:0;
+
+    display:block;
+
+    border-radius:7px;
+}
+
+
+/* =========================================================
+   MEASUREMENT RECORDS
+========================================================= */
+
+.measurement-section{
+
+    margin-top:14px;
+
+    border-top:
+
+        2px solid var(--red);
+}
+
+.measurement-header{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:15px;
+
+    margin-bottom:10px;
+}
+
+.measurement-title{
+
+    font-size:14px;
+
+    font-weight:700;
+
+    color:#ffffff;
+}
+
+.measurement-count{
+
+    padding:
+        4px 10px;
+
+    border-radius:20px;
+
+    background:#13090a;
+
+    border:
+
+        1px solid #451316;
+
+    color:#ff3b44;
+
+    font-size:10px;
+}
+
+.table-wrapper{
+
+    width:100%;
+
+    overflow:auto;
+
+    max-height:220px;
+
+    border:
+
+        1px solid #292929;
+
+    border-radius:7px;
+}
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    font-size:11px;
+}
+
+thead th{
+
+    position:sticky;
+
+    top:0;
+
+    z-index:3;
+
+    padding:9px;
+
+    background:#151515;
+
+    color:#aaaaaa;
+
+    border-bottom:
+
+        2px solid var(--red);
+
+    white-space:nowrap;
+}
+
+tbody td{
+
+    padding:8px;
+
+    text-align:center;
+
+    color:#cccccc;
+
+    border-bottom:
+
+        1px solid #1c1c1c;
+}
+
+tbody tr:hover{
+
+    background:#150a0b;
+}
+
+tbody td strong{
+
+    color:#ff3b44;
+}
+
+.empty-message{
+
+    padding:
+        24px !important;
+
+    color:#666666 !important;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer{
+
+    padding:
+        13px 0
+        18px;
+
+    text-align:center;
+
+    color:#555555;
+
+    font-size:9px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:1100px){
+
+    .dashboard{
+
+        grid-template-columns:
+            280px 1fr;
+    }
+
+    .right-area{
+
+        grid-template-columns:
+            1fr;
+    }
+
+    .visual-card,
+    .pattern-card{
+
+        min-height:500px;
+    }
+
+    .antenna-panel{
+
+        height:500px;
+    }
+}
+
+
+@media(max-width:800px){
+
+    .header{
+
+        height:auto;
+
+        padding:10px 0;
+    }
+
+    .header-content{
+
+        flex-wrap:wrap;
+    }
+
+    .dashboard{
+
+        display:block;
+    }
+
+    .control-card{
+
+        height:auto;
+
+        margin-bottom:14px;
+    }
+
+    .right-area{
+
+        display:block;
+
+        min-height:auto;
+    }
+
+    .visual-card,
+    .pattern-card{
+
+        height:500px;
+
+        margin-bottom:14px;
+    }
+
+    .student-name{
+
+        display:none;
+    }
+
+    .info-row{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:3px;
+    }
+
+    .info-value{
+
+        text-align:left;
+    }
+}
+
+
+@media(max-width:550px){
+
+    .main-container{
+
+        width:94%;
+    }
+
+    .welcome-card{
+
+        padding:
+            30px 20px;
+    }
+
+    .antenna-stage{
+
+        transform:
+            translate(-50%,-50%)
+            scale(.72);
+    }
+
+    .measurement-header{
+
+        align-items:flex-start;
+
+        flex-direction:column;
+    }
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     WELCOME PAGE
+========================================================= -->
+
+<section id="welcomePage">
+
+<div class="welcome-card">
+
+
+    <div class="rf-logo">
+        📡
+    </div>
+
+
+    <h1>
+        Dipole Antenna Laboratory
+    </h1>
+
+
+    <h2>
+        RF Performance & Radiation Pattern Simulator
+    </h2>
+
+
+    <p class="welcome-description">
+
+        Interactive Electronics & Telecommunication Engineering
+        practical simulation for testing dipole antenna performance,
+        measuring received signal strength and studying radiation
+        patterns at different angles.
+
+    </p>
+
+
+    <!-- STUDENT INFORMATION -->
+
+    <div class="student-info">
+
+
+        <div class="info-row">
+
+            <span class="info-label">
+                Student Name
+            </span>
+
+            <span class="info-value">
+                Atharv Gupta
+            </span>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <span class="info-label">
+                Class
+            </span>
+
+            <span class="info-value">
+                EJ3K G
+            </span>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <span class="info-label">
+                College
+            </span>
+
+            <span class="info-value">
+                Amrutvahini Polytechnic
+            </span>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <span class="info-label">
+                Department
+            </span>
+
+            <span class="info-value">
+                Department of EnTC
+            </span>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <span class="info-label">
+                Subject Teacher
+            </span>
+
+            <span class="info-value">
+                Prof. S. V. Gaikwad
+            </span>
+
+        </div>
+
+
+    </div>
+
+
+    <button
+        class="start-btn"
+        id="startBtn">
+
+        LAUNCH RF LABORATORY →
+
+    </button>
+
+
+</div>
+
+</section>
+
+
+
+<!-- =========================================================
+     SIMULATION PAGE
+========================================================= -->
+
+<section id="simulationPage">
+
+
+<header class="header">
+
+<div class="header-content">
+
+
+    <div class="logo-title">
+
+        <div class="small-logo">
+            📡
+        </div>
+
+        <div>
+
+            <h1>
+                Dipole Antenna RF Laboratory
+            </h1>
+
+            <p>
+                EnTC Practical • Antenna Performance Testing
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="student-name">
+        @definitely_atharv
+    </div>
+
+
+    <button
+        class="back-btn"
+        id="backBtn">
+
+        ← Welcome
+
+    </button>
+
+
+</div>
+
+</header>
+
+
+
+<main class="main-container">
+
+
+<div class="page-title">
+
+    <h2>
+        Testing the Performance of Given Dipole Antenna
+    </h2>
+
+    <p>
+        Adjust antenna length and rotation angle → observe RSS →
+        record measurements → analyze radiation pattern.
+    </p>
+
+</div>
+
+
+
+<!-- =========================================================
+     DASHBOARD
+========================================================= -->
+
+<div class="dashboard">
+
+
+<!-- =====================================================
+     CONTROLS
+===================================================== -->
+
+<aside>
+
+<div class="card control-card">
+
+
+<div class="card-title">
+    🔴 RF Measurement Controls
+</div>
+
+
+<div class="controls">
+
+
+<!-- ANTENNA LENGTH -->
+
+<div class="control-group">
+
+<label>
+
+<span>
+Antenna Length
+</span>
+
+<span
+class="control-value"
+id="lengthValue">
+
+0.50 λ
+
+</span>
+
+</label>
+
+
+<select id="lengthSelect">
+
+<option value="0.25">
+0.25 λ — Quarter Wave
+</option>
+
+<option value="0.50" selected>
+0.50 λ — Half Wave
+</option>
+
+<option value="0.75">
+0.75 λ — 3/4 Wave
+</option>
+
+<option value="1.00">
+1.00 λ — Full Wave
+</option>
+
+<option value="1.50">
+1.50 λ — 3/2 Wave
+</option>
+
+</select>
+
+</div>
+
+
+<!-- ROTATION -->
+
+<div class="control-group">
+
+<label>
+
+<span>
+Rotation Angle
+</span>
+
+<span
+class="control-value"
+id="angleValue">
+
+0°
+
+</span>
+
+</label>
+
+
+<input
+type="range"
+id="angleSlider"
+min="0"
+max="360"
+step="1"
+value="0">
+
+</div>
+
+
+<!-- MANUAL ANGLE -->
+
+<div class="control-group">
+
+<label>
+Manual Angle
+</label>
+
+<input
+type="number"
+id="manualAngle"
+min="0"
+max="360"
+value="0">
+
+</div>
+
+
+<!-- STEP -->
+
+<div class="control-group">
+
+<label>
+Angle Step
+</label>
+
+<select id="stepSelect">
+
+<option value="1">
+1°
+</option>
+
+<option value="5" selected>
+5°
+</option>
+
+<option value="10">
+10°
+</option>
+
+<option value="15">
+15°
+</option>
+
+<option value="30">
+30°
+</option>
+
+<option value="45">
+45°
+</option>
+
+</select>
+
+</div>
+
+
+<!-- STEP BUTTONS -->
+
+<div class="button-row">
+
+<button
+class="secondary-btn"
+id="minusBtn">
+
+− STEP
+
+</button>
+
+
+<button
+class="secondary-btn"
+id="plusBtn">
+
++ STEP
+
+</button>
+
+</div>
+
+
+<!-- RECORD -->
+
+<button
+class="primary-btn"
+id="recordBtn">
+
+● RECORD MEASUREMENT
+
+</button>
+
+
+<!-- DATA BUTTONS -->
+
+<div class="button-row">
+
+<button
+class="secondary-btn"
+id="clearBtn">
+
+CLEAR RECORDS
+
+</button>
+
+
+<button
+class="secondary-btn"
+id="exportBtn">
+
+EXPORT CSV
+
+</button>
+
+</div>
+
+
+<!-- SIGNAL -->
+
+<div class="readout">
+
+<div class="readout-label">
+RECEIVED SIGNAL STRENGTH
+</div>
+
+
+<div
+class="signal-value"
+id="signalValue">
+
+-30.0
+
+</div>
+
+
+<div class="signal-unit">
+dB
+</div>
+
+
+<span
+class="status"
+id="signalStatus">
+
+Strong Signal
+
+</span>
+
+</div>
+
+
+</div>
+
+</div>
+
+</aside>
+
+
+
+<!-- =====================================================
+     VISUAL AREA
+===================================================== -->
+
+<section class="right-area">
+
+
+<!-- ANTENNA ORIENTATION -->
+
+<div class="card visual-card">
+
+
+<div class="card-title">
+    ◉ Antenna Orientation
+</div>
+
+
+<div class="antenna-panel">
+
+
+<div class="angle-display">
+
+ANGLE
+
+<strong id="visualAngle">
+0°
+</strong>
+
+</div>
+
+
+<div class="antenna-stage">
+
+
+<div class="wave-circle wave1"></div>
+
+<div class="wave-circle wave2"></div>
+
+<div class="wave-circle wave3"></div>
+
+
+<div
+class="direction-line"
+id="directionLine">
+
+<div class="direction-arrow"></div>
+
+</div>
+
+
+<div
+class="antenna-rotator"
+id="antennaRotator">
+
+
+<div class="antenna">
+
+<div class="dipole-half left-half"></div>
+
+<div class="dipole-half right-half"></div>
+
+<div class="feed-point"></div>
+
+</div>
+
+</div>
+
+
+<div class="center-dot"></div>
+
+
+<div class="tx-label">
+DIPOLE ANTENNA
+</div>
+
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- RADIATION PATTERN -->
+
+<div class="card pattern-card">
+
+
+<div class="card-title">
+    ◉ Radiation Pattern
+</div>
+
+
+<canvas id="patternCanvas"></canvas>
+
+
+</div>
+
+
+</section>
+
+</div>
+
+
+
+<!-- =========================================================
+     MEASUREMENT RECORDS
+========================================================= -->
+
+<section class="card measurement-section">
+
+
+<div class="measurement-header">
+
+
+<div class="measurement-title">
+
+    ▣ Measurement Records
+
+</div>
+
+
+<div
+class="measurement-count"
+id="measurementCount">
+
+    0 Measurements
+
+</div>
+
+
+</div>
+
+
+<div class="table-wrapper">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>
+Sr. No.
+</th>
+
+<th>
+Rotation Angle
+</th>
+
+<th>
+Antenna Length
+</th>
+
+<th>
+Received Signal
+</th>
+
+<th>
+Signal Level
+</th>
+
+<th>
+Observation
+</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="measurementBody">
+
+<tr>
+
+<td
+colspan="6"
+class="empty-message">
+
+No measurements recorded.
+Adjust the rotation angle and click
+<b>Record Measurement</b>.
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+</section>
+
+
+
+<footer class="footer">
+
+    DIPOLE ANTENNA RF LABORATORY
+    &nbsp; • &nbsp;
+    Atharv Gupta
+    &nbsp; • &nbsp;
+    EJ3K G
+    &nbsp; • &nbsp;
+    Amrutvahini Polytechnic
+    &nbsp; • &nbsp;
+    Prof. S. V. Gaikwad
+
+</footer>
+
+
+</main>
+
+</section>
+
+
+
+<script>
+
+/* =========================================================
+   STATE
+========================================================= */
+
+const state = {
+
+    angle:0,
+
+    length:0.50,
+
+    measurements:[]
+
+};
+
+
+/* =========================================================
+   DOM ELEMENTS
+========================================================= */
+
+const welcomePage =
+document.getElementById("welcomePage");
+
+const simulationPage =
+document.getElementById("simulationPage");
+
+const startBtn =
+document.getElementById("startBtn");
+
+const backBtn =
+document.getElementById("backBtn");
+
+const angleSlider =
+document.getElementById("angleSlider");
+
+const manualAngle =
+document.getElementById("manualAngle");
+
+const lengthSelect =
+document.getElementById("lengthSelect");
+
+const stepSelect =
+document.getElementById("stepSelect");
+
+const angleValue =
+document.getElementById("angleValue");
+
+const visualAngle =
+document.getElementById("visualAngle");
+
+const lengthValue =
+document.getElementById("lengthValue");
+
+const signalValue =
+document.getElementById("signalValue");
+
+const signalStatus =
+document.getElementById("signalStatus");
+
+const antennaRotator =
+document.getElementById("antennaRotator");
+
+const directionLine =
+document.getElementById("directionLine");
+
+const recordBtn =
+document.getElementById("recordBtn");
+
+const minusBtn =
+document.getElementById("minusBtn");
+
+const plusBtn =
+document.getElementById("plusBtn");
+
+const clearBtn =
+document.getElementById("clearBtn");
+
+const exportBtn =
+document.getElementById("exportBtn");
+
+const measurementBody =
+document.getElementById("measurementBody");
+
+const measurementCount =
+document.getElementById("measurementCount");
+
+const canvas =
+document.getElementById("patternCanvas");
+
+const ctx =
+canvas.getContext("2d");
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+startBtn.addEventListener(
+    "click",
+    () => {
+
+        welcomePage.style.display =
+            "none";
+
+        simulationPage.style.display =
+            "block";
+
+        setTimeout(
+            () => {
+
+                resizeCanvas();
+
+                updateSimulation();
+
+            },
+            50
+        );
+
+    }
+);
+
+
+backBtn.addEventListener(
+    "click",
+    () => {
+
+        simulationPage.style.display =
+            "none";
+
+        welcomePage.style.display =
+            "flex";
+
+    }
+);
+
+
+/* =========================================================
+   ANGLE
+========================================================= */
+
+function setAngle(value){
+
+    let angle =
+        Number(value);
+
+
+    if(
+        !Number.isFinite(angle)
+    ){
+
+        angle=0;
+
+    }
+
+
+    angle =
+        Math.max(
+            0,
+            Math.min(
+                360,
+                angle
+            )
+        );
+
+
+    state.angle =
+        angle;
+
+
+    angleSlider.value =
+        angle;
+
+
+    manualAngle.value =
+        angle;
+
+
+    updateSimulation();
+
+}
+
+
+angleSlider.addEventListener(
+    "input",
+    () => {
+
+        setAngle(
+            angleSlider.value
+        );
+
+    }
+);
+
+
+manualAngle.addEventListener(
+    "change",
+    () => {
+
+        setAngle(
+            manualAngle.value
+        );
+
+    }
+);
+
+
+/* =========================================================
+   STEP CONTROLS
+========================================================= */
+
+minusBtn.addEventListener(
+    "click",
+    () => {
+
+        const step =
+            Number(
+                stepSelect.value
+            ) || 5;
+
+
+        setAngle(
+            state.angle-step
+        );
+
+    }
+);
+
+
+plusBtn.addEventListener(
+    "click",
+    () => {
+
+        const step =
+            Number(
+                stepSelect.value
+            ) || 5;
+
+
+        setAngle(
+            state.angle+step
+        );
+
+    }
+);
+
+
+/* =========================================================
+   ANTENNA LENGTH
+========================================================= */
+
+lengthSelect.addEventListener(
+    "change",
+    () => {
+
+        state.length =
+            Number(
+                lengthSelect.value
+            );
+
+
+        updateSimulation();
+
+    }
+);
+
+
+/* =========================================================
+   SIGNAL CALCULATION
+========================================================= */
+
+function calculateSignal(
+    angle,
+    length
+){
+
+    const radians =
+        angle *
+        Math.PI /
+        180;
+
+
+    /*
+       Dipole-like simulated
+       radiation response.
+    */
+
+    let pattern =
+        Math.abs(
+            Math.sin(
+                radians
+            )
+        );
+
+
+    let lengthFactor;
+
+
+    if(length <= .25){
+
+        lengthFactor=.88;
+
+    }
+    else if(length <= .50){
+
+        lengthFactor=1;
+
+    }
+    else if(length <= .75){
+
+        lengthFactor=1.04;
+
+    }
+    else if(length <= 1){
+
+        lengthFactor=1.08;
+
+    }
+    else{
+
+        lengthFactor=1.12;
+
+    }
+
+
+    const ripple =
+        .015 *
+        Math.sin(
+            radians*5 +
+            length*7
+        );
+
+
+    let normalized =
+        pattern *
+        lengthFactor +
+        ripple;
+
+
+    normalized =
+        Math.max(
+            .025,
+            Math.min(
+                1,
+                normalized
+            )
+        );
+
+
+    let db =
+        -30 +
+        20 *
+        Math.log10(
+            normalized
+        );
+
+
+    db +=
+        (length-.5)*1.5;
+
+
+    return Math.max(
+        -75,
+        Math.min(
+            -28,
+            db
+        )
+    );
+
+}
+
+
+/* =========================================================
+   SIGNAL STATUS
+========================================================= */
+
+function getSignalStatus(db){
+
+    if(db >= -35){
+
+        return "Very Strong";
+
+    }
+
+    if(db >= -45){
+
+        return "Strong Signal";
+
+    }
+
+    if(db >= -55){
+
+        return "Moderate";
+
+    }
+
+    if(db >= -65){
+
+        return "Weak";
+
+    }
+
+    return "Very Weak / Null";
+
+}
+
+
+/* =========================================================
+   UPDATE SIMULATION
+========================================================= */
+
+function updateSimulation(){
+
+    const db =
+        calculateSignal(
+            state.angle,
+            state.length
+        );
+
+
+    angleValue.textContent =
+        Math.round(
+            state.angle
+        )+"°";
+
+
+    visualAngle.textContent =
+        Math.round(
+            state.angle
+        )+"°";
+
+
+    lengthValue.textContent =
+        state.length.toFixed(2)+" λ";
+
+
+    signalValue.textContent =
+        db.toFixed(1);
+
+
+    signalStatus.textContent =
+        getSignalStatus(db);
+
+
+    antennaRotator.style.transform =
+        `translate(-50%,-50%) rotate(${state.angle}deg)`;
+
+
+    directionLine.style.transform =
+        `rotate(${state.angle}deg)`;
+
+
+    drawRadiationPattern();
+
+}
+
+
+/* =========================================================
+   RECORD MEASUREMENT
+========================================================= */
+
+recordBtn.addEventListener(
+    "click",
+    () => {
+
+        const db =
+            calculateSignal(
+                state.angle,
+                state.length
+            );
+
+
+        state.measurements.push({
+
+            angle:
+                state.angle,
+
+            length:
+                state.length,
+
+            signal:
+                db
+
+        });
+
+
+        renderMeasurements();
+
+        drawRadiationPattern();
+
+    }
+);
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+function renderMeasurements(){
+
+    measurementBody.innerHTML="";
+
+
+    measurementCount.textContent =
+        state.measurements.length +
+        (
+            state.measurements.length === 1
+            ? " Measurement"
+            : " Measurements"
+        );
+
+
+    if(
+        state.measurements.length===0
+    ){
+
+        measurementBody.innerHTML=`
+
+            <tr>
+
+                <td
+                    colspan="6"
+                    class="empty-message">
+
+                    No measurements recorded.
+                    Adjust the rotation angle and click
+                    <b>Record Measurement</b>.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    state.measurements.forEach(
+        (measurement,index)=>{
+
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            const status =
+                getSignalStatus(
+                    measurement.signal
+                );
+
+
+            let observation;
+
+
+            if(
+                measurement.signal >= -40
+            ){
+
+                observation =
+                    "Maximum / Strong";
+
+            }
+            else if(
+                measurement.signal >= -55
+            ){
+
+                observation =
+                    "Moderate Reception";
+
+            }
+            else if(
+                measurement.signal >= -65
+            ){
+
+                observation =
+                    "Low Reception";
+
+            }
+            else{
+
+                observation =
+                    "Near Radiation Null";
+
+            }
+
+
+            row.innerHTML=`
+
+                <td>
+                    ${index+1}
+                </td>
+
+                <td>
+                    ${Math.round(
+                        measurement.angle
+                    )}°
+                </td>
+
+                <td>
+                    ${measurement.length.toFixed(2)} λ
+                </td>
+
+                <td>
+
+                    <strong>
+                        ${measurement.signal.toFixed(1)} dB
+                    </strong>
+
+                </td>
+
+                <td>
+                    ${status}
+                </td>
+
+                <td>
+                    ${observation}
+                </td>
+
+            `;
+
+
+            measurementBody.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   CLEAR RECORDS
+========================================================= */
+
+clearBtn.addEventListener(
+    "click",
+    () => {
+
+        state.measurements=[];
+
+        renderMeasurements();
+
+        drawRadiationPattern();
+
+    }
+);
+
+
+/* =========================================================
+   CSV EXPORT
+========================================================= */
+
+exportBtn.addEventListener(
+    "click",
+    () => {
+
+        if(
+            state.measurements.length===0
+        ){
+
+            alert(
+                "Please record at least one measurement first."
+            );
+
+            return;
+
+        }
+
+
+        let csv =
+            "Sr No,Rotation Angle (Degree),Antenna Length (Lambda),Received Signal (dB),Signal Level,Observation\n";
+
+
+        state.measurements.forEach(
+            (m,index)=>{
+
+
+                let observation;
+
+
+                if(m.signal >= -40){
+
+                    observation =
+                        "Maximum / Strong";
+
+                }
+                else if(m.signal >= -55){
+
+                    observation =
+                        "Moderate Reception";
+
+                }
+                else if(m.signal >= -65){
+
+                    observation =
+                        "Low Reception";
+
+                }
+                else{
+
+                    observation =
+                        "Near Radiation Null";
+
+                }
+
+
+                csv +=
+                    `${index+1},`+
+                    `${m.angle},`+
+                    `${m.length.toFixed(2)},`+
+                    `${m.signal.toFixed(2)},`+
+                    `"${getSignalStatus(m.signal)}",`+
+                    `"${observation}"\n`;
+
+            }
+        );
+
+
+        const blob =
+            new Blob(
+                [csv],
+                {
+                    type:
+                        "text/csv;charset=utf-8;"
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        link.href=url;
+
+
+        link.download =
+            "Dipole_Antenna_Measurements.csv";
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        document.body.removeChild(
+            link
+        );
+
+
+        URL.revokeObjectURL(
+            url
+        );
+
+    }
+);
+
+
+/* =========================================================
+   CANVAS RESIZE
+========================================================= */
+
+function resizeCanvas(){
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+
+    const dpr =
+        window.devicePixelRatio || 1;
+
+
+    canvas.width =
+        rect.width*dpr;
+
+
+    canvas.height =
+        rect.height*dpr;
+
+
+    ctx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
+
+
+    drawRadiationPattern();
+
+}
+
+
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
+
+
+/* =========================================================
+   RADIATION PATTERN
+========================================================= */
+
+function drawRadiationPattern(){
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+
+    const width =
+        rect.width;
+
+
+    const height =
+        rect.height;
+
+
+    if(
+        width<=0 ||
+        height<=0
+    ){
+
+        return;
+
+    }
+
+
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    /* BACKGROUND */
+
+    ctx.fillStyle =
+        "#050505";
+
+    ctx.fillRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    const cx =
+        width/2;
+
+
+    const cy =
+        height/2;
+
+
+    const radius =
+        Math.min(
+            width,
+            height
+        )*.37;
+
+
+    /* =====================================================
+       POLAR GRID
+    ===================================================== */
+
+    ctx.strokeStyle =
+        "#2b2020";
+
+    ctx.lineWidth=1;
+
+
+    for(
+        let i=1;
+        i<=4;
+        i++
+    ){
+
+        const r =
+            radius*i/4;
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            cx,
+            cy,
+            r,
+            0,
+            Math.PI*2
+        );
+
+        ctx.stroke();
+
+    }
+
+
+    /* MAIN AXES */
+
+    ctx.strokeStyle =
+        "#443030";
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        cx-radius,
+        cy
+    );
+
+    ctx.lineTo(
+        cx+radius,
+        cy
+    );
+
+    ctx.moveTo(
+        cx,
+        cy-radius
+    );
+
+    ctx.lineTo(
+        cx,
+        cy+radius
+    );
+
+    ctx.stroke();
+
+
+    /* DIAGONALS */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        cx-radius*.707,
+        cy-radius*.707
+    );
+
+    ctx.lineTo(
+        cx+radius*.707,
+        cy+radius*.707
+    );
+
+
+    ctx.moveTo(
+        cx+radius*.707,
+        cy-radius*.707
+    );
+
+    ctx.lineTo(
+        cx-radius*.707,
+        cy+radius*.707
+    );
+
+
+    ctx.stroke();
+
+
+    /* =====================================================
+       ANGLE LABELS
+    ===================================================== */
+
+    ctx.fillStyle =
+        "#777777";
+
+    ctx.font =
+        "11px Segoe UI";
+
+    ctx.textAlign =
+        "center";
+
+    ctx.textBaseline =
+        "middle";
+
+
+    const labels=[
+
+        [0,"0°"],
+        [45,"45°"],
+        [90,"90°"],
+        [135,"135°"],
+        [180,"180°"],
+        [225,"225°"],
+        [270,"270°"],
+        [315,"315°"]
+
+    ];
+
+
+    labels.forEach(
+        ([degree,text])=>{
+
+            const rad =
+                degree*
+                Math.PI/
+                180;
+
+
+            const x =
+                cx+
+                Math.cos(rad)*
+                (radius+18);
+
+
+            const y =
+                cy-
+                Math.sin(rad)*
+                (radius+18);
+
+
+            ctx.fillText(
+                text,
+                x,
+                y
+            );
+
+        }
+    );
+
+
+    /* =====================================================
+       THEORETICAL DIPOLE PATTERN
+    ===================================================== */
+
+    ctx.beginPath();
+
+
+    for(
+        let degree=0;
+        degree<=360;
+        degree++
+    ){
+
+        const rad =
+            degree*
+            Math.PI/
+            180;
+
+
+        const pattern =
+            Math.max(
+                .02,
+                Math.abs(
+                    Math.sin(rad)
+                )
+            );
+
+
+        let db =
+            20*
+            Math.log10(
+                pattern
+            );
+
+
+        db =
+            Math.max(
+                -40,
+                db
+            );
+
+
+        const r =
+            radius*
+            (
+                .15+
+                .85*
+                ((db+40)/40)
+            );
+
+
+        const x =
+            cx+
+            Math.cos(rad)*r;
+
+
+        const y =
+            cy-
+            Math.sin(rad)*r;
+
+
+        if(degree===0){
+
+            ctx.moveTo(
+                x,
+                y
+            );
+
+        }
+        else{
+
+            ctx.lineTo(
+                x,
+                y
+            );
+
+        }
+
+    }
+
+
+    ctx.closePath();
+
+
+    /* RED AREA */
+
+    ctx.fillStyle =
+        "rgba(229,9,20,.08)";
+
+    ctx.fill();
+
+
+    /* RED CURVE */
+
+    ctx.strokeStyle =
+        "#e50914";
+
+    ctx.lineWidth=2;
+
+    ctx.shadowColor =
+        "rgba(229,9,20,.55)";
+
+    ctx.shadowBlur=8;
+
+    ctx.stroke();
+
+    ctx.shadowBlur=0;
+
+
+    /* =====================================================
+       RECORDED MEASUREMENTS
+    ===================================================== */
+
+    state.measurements.forEach(
+        measurement=>{
+
+            const rad =
+                measurement.angle*
+                Math.PI/
+                180;
+
+
+            const pattern =
+                Math.max(
+                    .02,
+                    Math.abs(
+                        Math.sin(rad)
+                    )
+                );
+
+
+            let db =
+                20*
+                Math.log10(
+                    pattern
+                );
+
+
+            db =
+                Math.max(
+                    -40,
+                    db
+                );
+
+
+            const r =
+                radius*
+                (
+                    .15+
+                    .85*
+                    ((db+40)/40)
+                );
+
+
+            const x =
+                cx+
+                Math.cos(rad)*r;
+
+
+            const y =
+                cy-
+                Math.sin(rad)*r;
+
+
+            ctx.beginPath();
+
+
+            ctx.arc(
+                x,
+                y,
+                4,
+                0,
+                Math.PI*2
+            );
+
+
+            ctx.fillStyle =
+                "#ffffff";
+
+            ctx.shadowColor =
+                "rgba(255,255,255,.5)";
+
+            ctx.shadowBlur=8;
+
+            ctx.fill();
+
+            ctx.shadowBlur=0;
+
+        }
+    );
+
+
+    /* =====================================================
+       CURRENT ANGLE
+    ===================================================== */
+
+    const currentRad =
+        state.angle*
+        Math.PI/
+        180;
+
+
+    const markerX =
+        cx+
+        Math.cos(currentRad)*
+        radius;
+
+
+    const markerY =
+        cy-
+        Math.sin(currentRad)*
+        radius;
+
+
+    ctx.beginPath();
+
+
+    ctx.moveTo(
+        cx,
+        cy
+    );
+
+
+    ctx.lineTo(
+        markerX,
+        markerY
+    );
+
+
+    ctx.strokeStyle =
+        "#ffffff";
+
+    ctx.lineWidth=2;
+
+    ctx.stroke();
+
+
+    /* CURRENT MARKER */
+
+    ctx.beginPath();
+
+
+    ctx.arc(
+        markerX,
+        markerY,
+        5,
+        0,
+        Math.PI*2
+    );
+
+
+    ctx.fillStyle =
+        "#e50914";
+
+    ctx.shadowColor =
+        "rgba(229,9,20,.7)";
+
+    ctx.shadowBlur=12;
+
+    ctx.fill();
+
+    ctx.shadowBlur=0;
+
+
+    /* CENTER TEXT */
+
+    ctx.fillStyle =
+        "#777777";
+
+    ctx.font =
+        "12px Segoe UI";
+
+    ctx.textAlign =
+        "center";
+
+
+    ctx.fillText(
+        "RADIATION",
+        cx,
+        cy-6
+    );
+
+
+    ctx.fillText(
+        "PATTERN",
+        cx,
+        cy+9
+    );
+
+
+    /* =====================================================
+       LEGEND
+    ===================================================== */
+
+    ctx.textAlign =
+        "left";
+
+
+    /* RED */
+
+    ctx.fillStyle =
+        "#e50914";
+
+    ctx.fillRect(
+        15,
+        18,
+        18,
+        3
+    );
+
+
+    ctx.fillStyle =
+        "#888888";
+
+    ctx.fillText(
+        "Theoretical",
+        40,
+        22
+    );
+
+
+    /* WHITE */
+
+    ctx.fillStyle =
+        "#ffffff";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        24,
+        42,
+        4,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle =
+        "#888888";
+
+    ctx.fillText(
+        "Recorded",
+        40,
+        46
+    );
+
+}
+
+
+/* =========================================================
+   INITIALIZATION
+========================================================= */
+
+state.length =
+    Number(
+        lengthSelect.value
+    );
+
+
+renderMeasurements();
+
+</script>
+
+</body>
+</html>
