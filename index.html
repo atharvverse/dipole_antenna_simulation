@@ -898,6 +898,19 @@ input[type="range"]{
     font-size:10px;
 }
 
+.relative-db{
+    margin-top:8px;
+    color:#aaaaaa;
+    font-size:11px;
+    letter-spacing:.2px;
+}
+
+.table-subvalue{
+    margin-top:3px;
+    color:#777777;
+    font-size:10px;
+}
+
 .status{
 
     display:inline-block;
@@ -1970,7 +1983,7 @@ EXPORT CSV
 <div class="readout">
 
 <div class="readout-label">
-RECEIVED SIGNAL STRENGTH (dB)
+NORMALIZED SIGNAL LEVEL
 </div>
 
 
@@ -1978,13 +1991,17 @@ RECEIVED SIGNAL STRENGTH (dB)
 class="signal-value"
 id="signalValue">
 
--30.0
+50.0
 
 </div>
 
 
 <div class="signal-unit">
-dB
+0–50 display scale
+</div>
+
+<div class="relative-db" id="relativeDbValue">
+Relative theoretical: 0.0 dB
 </div>
 
 
@@ -2163,7 +2180,7 @@ Antenna Length
 </th>
 
 <th>
-Received Signal
+Theoretical Relative Signal
 </th>
 
 <th>
@@ -2498,136 +2515,125 @@ lengthSelect.addEventListener(
    SIGNAL CALCULATION
 ========================================================= */
 
-function calculateSignal(
-    angle,
-    length
-){
+function theoreticalFieldPattern(angle, length){
 
-    const radians =
-        angle *
-        Math.PI /
-        180;
-
+    const theta = angle * Math.PI / 180;
+    const a = Math.PI * length; // kL/2 = pi(L/lambda)
+    const sinTheta = Math.sin(theta);
 
     /*
-       Dipole-like simulated
-       radiation response.
+       Thin, center-fed linear dipole far-field pattern:
+
+       E(theta) ∝ |[cos((kL/2)cos(theta)) - cos(kL/2)] / sin(theta)|
+
+       with k = 2pi/lambda and L expressed in wavelengths.
+       This gives the theoretical pattern for the selected
+       electrical length instead of using the same sin(theta)
+       curve for every antenna length.
     */
 
-    let pattern =
-        Math.abs(
-            Math.sin(
-                radians
-            )
+    if(Math.abs(sinTheta) < 1e-8){
+        return 0;
+    }
+
+    const numerator =
+        Math.cos(a * Math.cos(theta)) - Math.cos(a);
+
+    return Math.abs(numerator / sinTheta);
+}
+
+
+function theoreticalMaximum(length){
+
+    let maximum = 0;
+
+    for(let degree=0; degree<=360; degree++){
+
+        const value =
+            theoreticalFieldPattern(
+                degree,
+                length
+            );
+
+        if(value > maximum){
+            maximum = value;
+        }
+    }
+
+    return Math.max(maximum, 1e-12);
+}
+
+
+function calculateTheoretical(angle, length){
+
+    const field =
+        theoreticalFieldPattern(
+            angle,
+            length
         );
 
+    const maximum =
+        theoreticalMaximum(
+            length
+        );
 
-    let lengthFactor;
+    const normalizedField =
+        field / maximum;
 
+    let relativeDb;
 
-    if(length <= .25){
-
-        lengthFactor = .88;
-
-    }
-    else if(length <= .50){
-
-        lengthFactor = 1.00;
-
-    }
-    else if(length <= .75){
-
-        lengthFactor = 1.04;
-
-    }
-    else if(length <= 1.00){
-
-        lengthFactor = 1.08;
-
+    if(normalizedField <= 0){
+        relativeDb = -40;
     }
     else{
-
-        lengthFactor = 1.12;
-
+        relativeDb =
+            20 * Math.log10(
+                normalizedField
+            );
     }
 
-
-    const ripple =
-        .015 *
-        Math.sin(
-            radians * 5 +
-            length * 7
-        );
-
-
-    let normalized =
-        pattern *
-        lengthFactor +
-        ripple;
-
-
-    normalized =
-        Math.max(
-            .025,
-            Math.min(
-                1,
-                normalized
-            )
-        );
-
-
-    /*
-       Original simulated RF response:
-       approximately -75 dB to -28 dB.
-    */
-
-    let rawDb =
-        -30 +
-        20 *
-        Math.log10(
-            normalized
-        );
-
-
-    rawDb +=
-        (length - .5) * 1.5;
-
-
-    rawDb =
-        Math.max(
-            -75,
-            Math.min(
-                -28,
-                rawDb
-            )
-        );
-
-
-    /*
-       Convert the simulated negative dB range
-       into a positive relative dB scale.
-
-       -75 dB  -> 0 dB
-       -65 dB  -> ~10.6 dB
-       -55 dB  -> ~21.3 dB
-       -45 dB  -> ~31.9 dB
-       -35 dB  -> ~42.6 dB
-       -28 dB  -> 50 dB
-
-       Higher positive value = stronger signal.
-    */
-
-    const positiveDb =
-        ((rawDb + 75) / 47) * 50;
-
-
-    return Math.max(
-        0,
+    relativeDb = Math.max(
+        -40,
         Math.min(
-            50,
-            positiveDb
+            0,
+            relativeDb
         )
     );
+
+    /*
+       Positive 0-50 display scale retained for the lab UI.
+       This is a normalized display level, NOT a physical dB unit.
+       Exact theoretical dB is returned separately as relativeDb.
+    */
+
+    const displayLevel =
+        ((relativeDb + 40) / 40) * 50;
+
+    return {
+        field,
+        normalizedField,
+        relativeDb,
+        displayLevel
+    };
+}
+
+
+function calculateSignal(angle, length){
+
+    return calculateTheoretical(
+        angle,
+        length
+    ).displayLevel;
+
+}
+
+
+function calculateRelativeDb(angle, length){
+
+    return calculateTheoretical(
+        angle,
+        length
+    ).relativeDb;
 
 }
 
@@ -2643,28 +2649,20 @@ function calculateSignal(
 
 function getSignalStatus(db){
 
-    if(db >= 40){
-
+    if(db >= -3){
         return "Very Strong";
-
     }
 
-    if(db >= 30){
-
+    if(db >= -10){
         return "Strong Signal";
-
     }
 
-    if(db >= 20){
-
+    if(db >= -20){
         return "Moderate";
-
     }
 
-    if(db >= 10){
-
+    if(db >= -30){
         return "Weak";
-
     }
 
     return "Very Weak / Null";
@@ -2683,44 +2681,47 @@ function getSignalStatus(db){
 
 function updateSimulation(){
 
-    const db =
-        calculateSignal(
+    const theoretical =
+        calculateTheoretical(
             state.angle,
             state.length
         );
 
+    const displayLevel =
+        theoretical.displayLevel;
+
+    const relativeDb =
+        theoretical.relativeDb;
 
     angleValue.textContent =
         Math.round(
             state.angle
         )+"°";
 
-
     visualAngle.textContent =
         Math.round(
             state.angle
         )+"°";
 
-
     lengthValue.textContent =
         state.length.toFixed(2)+" λ";
 
-
     signalValue.textContent =
-        db.toFixed(1);
+        displayLevel.toFixed(1);
 
+    relativeDbValue.textContent =
+        "Relative theoretical: " +
+        relativeDb.toFixed(1) +
+        " dB";
 
     signalStatus.textContent =
-        getSignalStatus(db);
-
+        getSignalStatus(relativeDb);
 
     antennaRotator.style.transform =
         `translate(-50%,-50%) rotate(${state.angle}deg)`;
 
-
     directionLine.style.transform =
         `rotate(${state.angle}deg)`;
-
 
     drawRadiationPattern();
 
@@ -2735,8 +2736,8 @@ recordBtn.addEventListener(
     "click",
     () => {
 
-        const db =
-            calculateSignal(
+        const theoretical =
+            calculateTheoretical(
                 state.angle,
                 state.length
             );
@@ -2751,7 +2752,10 @@ recordBtn.addEventListener(
                 state.length,
 
             signal:
-                db
+                theoretical.relativeDb,
+
+            displayLevel:
+                theoretical.displayLevel
 
         });
 
@@ -2889,6 +2893,9 @@ function renderMeasurements(){
                     <strong>
                         ${measurement.signal.toFixed(1)} dB
                     </strong>
+                    <div class="table-subvalue">
+                        Display: ${measurement.displayLevel.toFixed(1)}/50
+                    </div>
 
                 </td>
 
@@ -2953,7 +2960,7 @@ exportBtn.addEventListener(
 
 
         let csv =
-            "Sr No,Rotation Angle (Degree),Antenna Length (Lambda),Received Signal (dB),Signal Level,Observation\n";
+            "Sr No,Rotation Angle (Degree),Antenna Length (Lambda),Theoretical Relative Signal (dB),Normalized Display Level (0-50),Signal Level,Observation\n";
 
 
         state.measurements.forEach(
@@ -3000,6 +3007,7 @@ exportBtn.addEventListener(
                     `${m.angle},`+
                     `${m.length.toFixed(2)},`+
                     `${m.signal.toFixed(2)},`+
+                    `${m.displayLevel.toFixed(2)},`+
                     `"${getSignalStatus(m.signal)}",`+
                     `"${observation}"\n`;
 
@@ -3341,25 +3349,28 @@ function drawRadiationPattern(){
 
 
         const pattern =
-            Math.max(
-                .02,
-                Math.abs(
-                    Math.sin(rad)
-                )
+            theoreticalFieldPattern(
+                degree,
+                state.length
             );
 
+        const maximum =
+            theoreticalMaximum(
+                state.length
+            );
+
+        const normalizedField =
+            pattern / maximum;
 
         let db =
-            20*
-            Math.log10(
-                pattern
-            );
-
+            normalizedField <= 0
+            ? -40
+            : 20 * Math.log10(normalizedField);
 
         db =
             Math.max(
                 -40,
-                db
+                Math.min(0, db)
             );
 
 
