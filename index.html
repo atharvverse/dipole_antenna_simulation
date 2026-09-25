@@ -524,16 +524,6 @@ body{
 
     margin-right:7px;
 }
-}
-
-.student-name::before{
-
-    content:"●";
-
-    color:var(--red);
-
-    margin-right:7px;
-}
 
 .back-btn{
 
@@ -1980,7 +1970,7 @@ EXPORT CSV
 <div class="readout">
 
 <div class="readout-label">
-RECEIVED SIGNAL STRENGTH
+RECEIVED SIGNAL STRENGTH (dB)
 </div>
 
 
@@ -2537,27 +2527,27 @@ function calculateSignal(
 
     if(length <= .25){
 
-        lengthFactor=.88;
+        lengthFactor = .88;
 
     }
     else if(length <= .50){
 
-        lengthFactor=1;
+        lengthFactor = 1.00;
 
     }
     else if(length <= .75){
 
-        lengthFactor=1.04;
+        lengthFactor = 1.04;
 
     }
-    else if(length <= 1){
+    else if(length <= 1.00){
 
-        lengthFactor=1.08;
+        lengthFactor = 1.08;
 
     }
     else{
 
-        lengthFactor=1.12;
+        lengthFactor = 1.12;
 
     }
 
@@ -2565,8 +2555,8 @@ function calculateSignal(
     const ripple =
         .015 *
         Math.sin(
-            radians*5 +
-            length*7
+            radians * 5 +
+            length * 7
         );
 
 
@@ -2586,7 +2576,12 @@ function calculateSignal(
         );
 
 
-    let db =
+    /*
+       Original simulated RF response:
+       approximately -75 dB to -28 dB.
+    */
+
+    let rawDb =
         -30 +
         20 *
         Math.log10(
@@ -2594,15 +2589,43 @@ function calculateSignal(
         );
 
 
-    db +=
-        (length-.5)*1.5;
+    rawDb +=
+        (length - .5) * 1.5;
+
+
+    rawDb =
+        Math.max(
+            -75,
+            Math.min(
+                -28,
+                rawDb
+            )
+        );
+
+
+    /*
+       Convert the simulated negative dB range
+       into a positive relative dB scale.
+
+       -75 dB  -> 0 dB
+       -65 dB  -> ~10.6 dB
+       -55 dB  -> ~21.3 dB
+       -45 dB  -> ~31.9 dB
+       -35 dB  -> ~42.6 dB
+       -28 dB  -> 50 dB
+
+       Higher positive value = stronger signal.
+    */
+
+    const positiveDb =
+        ((rawDb + 75) / 47) * 50;
 
 
     return Math.max(
-        -75,
+        0,
         Math.min(
-            -28,
-            db
+            50,
+            positiveDb
         )
     );
 
@@ -2611,29 +2634,34 @@ function calculateSignal(
 
 /* =========================================================
    SIGNAL STATUS
+=========================================================
+
+
+/* =========================================================
+   SIGNAL STATUS
 ========================================================= */
 
 function getSignalStatus(db){
 
-    if(db >= -35){
+    if(db >= 40){
 
         return "Very Strong";
 
     }
 
-    if(db >= -45){
+    if(db >= 30){
 
         return "Strong Signal";
 
     }
 
-    if(db >= -55){
+    if(db >= 20){
 
         return "Moderate";
 
     }
 
-    if(db >= -65){
+    if(db >= 10){
 
         return "Weak";
 
@@ -2642,6 +2670,11 @@ function getSignalStatus(db){
     return "Very Weak / Null";
 
 }
+
+
+/* =========================================================
+   UPDATE SIMULATION
+=========================================================
 
 
 /* =========================================================
@@ -2796,7 +2829,7 @@ function renderMeasurements(){
 
 
             if(
-                measurement.signal >= -40
+                measurement.signal >= 40
             ){
 
                 observation =
@@ -2804,7 +2837,15 @@ function renderMeasurements(){
 
             }
             else if(
-                measurement.signal >= -55
+                measurement.signal >= 30
+            ){
+
+                observation =
+                    "Strong Reception";
+
+            }
+            else if(
+                measurement.signal >= 20
             ){
 
                 observation =
@@ -2812,7 +2853,7 @@ function renderMeasurements(){
 
             }
             else if(
-                measurement.signal >= -65
+                measurement.signal >= 10
             ){
 
                 observation =
@@ -2922,19 +2963,25 @@ exportBtn.addEventListener(
                 let observation;
 
 
-                if(m.signal >= -40){
+                if(m.signal >= 40){
 
                     observation =
                         "Maximum / Strong";
 
                 }
-                else if(m.signal >= -55){
+                else if(m.signal >= 30){
+
+                    observation =
+                        "Strong Reception";
+
+                }
+                else if(m.signal >= 20){
 
                     observation =
                         "Moderate Reception";
 
                 }
-                else if(m.signal >= -65){
+                else if(m.signal >= 10){
 
                     observation =
                         "Low Reception";
